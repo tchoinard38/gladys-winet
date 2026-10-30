@@ -95,7 +95,7 @@ export function buildDevice(gladys, { apiKey, name, language }) {
       ),
       named(FEATURES.ROOM, sensor({ category: C.TEMPERATURE_SENSOR, type: T.SENSOR.DECIMAL, unit: U.CELSIUS, min: -30, max: 100 })),
       named(FEATURES.STATUS, sensor({ category: C.TEXT, type: T.TEXT.TEXT, keep_history: false, min: 0, max: 0 })),
-      named(FEATURES.ALARM, sensor({ category: C.UNKNOWN, type: T.SENSOR.BINARY, min: 0, max: 1 })),
+      named(FEATURES.ALARM, sensor({ category: C.ALARM, type: T.SENSOR.BINARY, min: 0, max: 1 })),
       named(
         FEATURES.POWER,
         command({
