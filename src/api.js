@@ -23,4 +23,5 @@ export const api = {
   shutdown: (key) => call('Shutdown', key),
   setPower: (key, level) => call('SetPower', key, String(level)),
   setTemperature: (key, value) => call('SetTemperature', key, String(value)),
+  setWaterTemperature: (key, value) => call('SetWaterTemperature', key, String(value)),
 };

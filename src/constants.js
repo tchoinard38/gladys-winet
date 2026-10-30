@@ -16,6 +16,9 @@ export const FEATURES = {
   SETPOINT: 'setpoint',
   OPERATING: 'operating',
   ROOM: 'room',
+  WATER: 'water',
+  WATER_SETPOINT: 'water_setpoint',
+  FLAME: 'flame',
   STATUS: 'status',
   ALARM: 'alarm',
   POWER: 'power',
@@ -42,8 +45,19 @@ export const STOVE_STATUS = {
 /** Le poêle produit de la chaleur dans ces statuts. */
 export const HEATING_STATUSES = new Set([STOVE_STATUS.IGNITION, STOVE_STATUS.WORK]);
 export const ALARM_STATUSES = new Set([STOVE_STATUS.ALARM, STOVE_STATUS.ALARM_MEMORY]);
+/** Flamme présente ou en cours d'allumage (dérivé du statut cloud). */
+export const FLAME_STATUSES = new Set([
+  STOVE_STATUS.WAITING_FLAME_1,
+  STOVE_STATUS.WAITING_FLAME_2,
+  STOVE_STATUS.IGNITION,
+  STOVE_STATUS.WORK,
+  STOVE_STATUS.STANDBY,
+  STOVE_STATUS.BRAZIER_CLEANING,
+]);
 
 export const SETPOINT = { min: 5, max: 40, step: 1 };
+/** Consigne d'eau (poêles hydro) : plage vérifiée stove.py SetWaterTemperature. */
+export const WATER_SETPOINT = { min: 5, max: 80, step: 1 };
 export const POWER_LEVELS = [1, 2, 3, 4, 5];
 
 export const LIMITS = { statusText: 200, eventText: 1000 };

@@ -16,6 +16,7 @@ import {
 import {
   DEVICE_TYPE,
   FEATURES,
+  FLAME_STATUSES,
   HEATING_STATUSES,
   LIMITS,
   OPERATING_STATE,
@@ -24,6 +25,7 @@ import {
   STOVE_STATUS,
   THERMOSTAT_MODE,
   ALARM_STATUSES,
+  WATER_SETPOINT,
 } from './constants.js';
 import { texts } from './i18n.js';
 
@@ -94,6 +96,19 @@ export function buildDevice(gladys, { apiKey, name, language }) {
         }),
       ),
       named(FEATURES.ROOM, sensor({ category: C.TEMPERATURE_SENSOR, type: T.SENSOR.DECIMAL, unit: U.CELSIUS, min: -30, max: 100 })),
+      named(FEATURES.WATER, sensor({ category: C.TEMPERATURE_SENSOR, type: T.SENSOR.DECIMAL, unit: U.CELSIUS, min: -30, max: 150 })),
+      named(
+        FEATURES.WATER_SETPOINT,
+        command({
+          category: C.WATER_HEATER,
+          type: T.WATER_HEATER.TARGET_TEMPERATURE,
+          unit: U.CELSIUS,
+          min: WATER_SETPOINT.min,
+          max: WATER_SETPOINT.max,
+          step: WATER_SETPOINT.step,
+        }),
+      ),
+      named(FEATURES.FLAME, sensor({ category: C.UNKNOWN, type: T.SENSOR.BINARY, min: 0, max: 1 })),
       named(FEATURES.STATUS, sensor({ category: C.TEXT, type: T.TEXT.TEXT, keep_history: false, min: 0, max: 0 })),
       named(FEATURES.ALARM, sensor({ category: C.UNKNOWN, type: T.SENSOR.BINARY, min: 0, max: 1 })), // pas de catégorie 'alarm' dans le cœur Gladys
       named(
@@ -124,8 +139,11 @@ export function readingFromStatus(c) {
     on: status !== STOVE_STATUS.OFF,
     heating: HEATING_STATUSES.has(status),
     alarm: ALARM_STATUSES.has(status),
+    flame: FLAME_STATUSES.has(status),
     room: num(c.AirTemperature),
     setpoint: num(c.SetAirTemperature),
+    water: num(c.WaterTemperature),
+    waterSetpoint: num(c.SetWaterTemperature),
     power: Number.isFinite(Number(c.SetPower)) && Number(c.SetPower) > 0 ? Number(c.SetPower) : null,
   };
 }
@@ -146,8 +164,11 @@ export function buildStates(gladys, apiKey, reading, language) {
   push(FEATURES.MODE, reading.on ? 1 : 0);
   push(FEATURES.OPERATING, reading.heating ? 1 : 0);
   push(FEATURES.ALARM, reading.alarm ? 1 : 0);
+  push(FEATURES.FLAME, reading.flame ? 1 : 0);
   push(FEATURES.ROOM, reading.room);
   push(FEATURES.SETPOINT, reading.setpoint);
+  push(FEATURES.WATER, reading.water);
+  push(FEATURES.WATER_SETPOINT, reading.waterSetpoint);
   push(FEATURES.POWER, reading.power);
   states.push({
     device_feature_external_id: ids.feature(FEATURES.STATUS),

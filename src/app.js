@@ -11,6 +11,7 @@ import {
   FEATURES,
   SCENE_TRIGGERS,
   TIMINGS,
+  WATER_SETPOINT,
 } from './constants.js';
 import { scrapeApiKey } from './portal.js';
 import { loadKey, saveKey } from './storage.js';
@@ -172,6 +173,14 @@ export class WinetApp {
       result = await api.setTemperature(this.key, v);
       if (!result.Success) throw new Error(`WiNET refused: ${result.ErrorDescription ?? 'error'}`);
       await this.gladys.publishState(ids.feature(FEATURES.SETPOINT), v);
+    } else if (key === FEATURES.WATER_SETPOINT) {
+      const v = Math.round(Number(value));
+      if (!Number.isFinite(v) || v < WATER_SETPOINT.min || v > WATER_SETPOINT.max) {
+        throw new Error(`water setpoint ${WATER_SETPOINT.min}..${WATER_SETPOINT.max}`);
+      }
+      result = await api.setWaterTemperature(this.key, v);
+      if (!result.Success) throw new Error(`WiNET refused: ${result.ErrorDescription ?? 'error'}`);
+      await this.gladys.publishState(ids.feature(FEATURES.WATER_SETPOINT), v);
     } else if (key === FEATURES.POWER) {
       const v = Number(value);
       if (!Number.isFinite(v) || v < 1 || v > 5) throw new Error('power level 1..5');

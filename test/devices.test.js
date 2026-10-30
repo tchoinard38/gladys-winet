@@ -44,6 +44,18 @@ test('lecture GetStatus en chauffe', () => {
   assert.equal(byId.status, 'En chauffe');
 });
 
+test('poêle hydro : température + consigne eau relayées', () => {
+  const r = readingFromStatus({ Status: 4, AirTemperature: 21.5, SetAirTemperature: 23, SetPower: 2, WaterTemperature: 52, SetWaterTemperature: 60 });
+  assert.equal(r.water, 52);
+  assert.equal(r.waterSetpoint, 60);
+  assert.equal(r.flame, true);
+  const states = buildStates(gladys, 'K-E-Y', r, 'fr');
+  const byId = Object.fromEntries(states.map((s) => [s.device_feature_external_id.split(':').pop(), s.state ?? s.text]));
+  assert.equal(byId.water, 52);
+  assert.equal(byId.water_setpoint, 60);
+  assert.equal(byId.flame, 1);
+});
+
 test('alarme : binaire + statut FR', () => {
   const r = readingFromStatus({ Status: 8 });
   assert.equal(r.alarm, true);
