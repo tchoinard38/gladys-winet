@@ -1,67 +1,79 @@
+// Tests des conversions WiNET (registres locaux, alarmes, repli cloud).
+import test from 'node:test';
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
-import { normalizeConfig } from '../src/config.js';
-import { readingFromStatus, buildStates, stoveId } from '../src/devices.js';
+import {
+  readingFromRegisters,
+  computeAlarmCode,
+  activeAlarmBits,
+  toCelsius,
+} from '../src/local.js';
+import { readingFromCloudStatus, buildStatesFrom } from '../src/devices.js';
+import { CLOUD_STATUS, FEATURES } from '../src/constants.js';
 
-const gladys = {
-  externalIds: (type, platformId) => ({
-    device: `ext:sel:${type}:${platformId}`,
-    feature: (key) => `ext:sel:${type}:${platformId}:${key}`,
-  }),
-};
+const ids = { feature: (k) => `ext:x:stove:abc:${k}` };
 
-test('normalizeConfig exige email + mot de passe', () => {
-  const c = normalizeConfig({});
-  assert.deepEqual(c.missing, ['email', 'password']);
-  assert.equal(c.refreshInterval, 120);
-});
-
-test('normalizeConfig borne l’intervalle', () => {
-  const c = normalizeConfig({ email: 'a@b.c', password: 'x', refresh_interval: 5 });
-  assert.deepEqual(c.missing, []);
-  assert.equal(c.refreshInterval, 60);
-});
-
-test('lecture GetStatus : les 0 du cloud à l’arrêt ne sont pas des T°', () => {
-  const r = readingFromStatus({ Status: 0, AirTemperature: 0, SetAirTemperature: 0, SetPower: 0 });
+test('registres du poêle réel (éteint) -> lecture normalisée', () => {
+  const regs = { 6: 1, 7: 0, 8: 0, 9: 0, 10: 0, 12: 0, 13: 1, 15: 162, 16: 0, 21: 21 };
+  const r = readingFromRegisters(regs);
+  assert.equal(r.statusKey, 'off');
   assert.equal(r.on, false);
-  assert.equal(r.room, null);
-  assert.equal(r.setpoint, null);
-  assert.equal(r.power, null);
+  assert.equal(r.setpoint, 22.5);
+  assert.equal(r.room, null); // pas de module room-control
+  assert.equal(r.fireLevel, 0);
+  assert.equal(r.fanSpeed, 1);
+  assert.equal(r.flue, 21);
+  assert.equal(r.alarm, false);
 });
 
-test('lecture GetStatus en chauffe', () => {
-  const r = readingFromStatus({ Status: 4, AirTemperature: 21.5, SetAirTemperature: 23, SetPower: 2 });
+test('températures: raw * 0.25 - 18', () => {
+  assert.equal(toCelsius(162), 22.5);
+  assert.equal(toCelsius(140), 17);
+});
+
+test('en chauffe: actif, flamme, chrono et granulés OK', () => {
+  const regs = { 6: 3, 7: 1, 8: 0, 9: 0, 10: 0, 12: 2, 13: 3, 15: 160, 16: 0, 21: 180 };
+  const r = readingFromRegisters(regs);
+  assert.equal(r.statusKey, 'work');
   assert.equal(r.on, true);
-  assert.equal(r.heating, true);
-  assert.equal(r.room, 21.5);
-  assert.equal(r.setpoint, 23);
-  const states = buildStates(gladys, 'K-E-Y', r, 'fr');
-  const byId = Object.fromEntries(states.map((s) => [s.device_feature_external_id.split(':').pop(), s.state ?? s.text]));
-  assert.equal(byId.mode, 1);
-  assert.equal(byId.operating, 1);
-  assert.equal(byId.room, 21.5);
-  assert.equal(byId.status, 'En chauffe');
-});
-
-test('poêle hydro : température + consigne eau relayées', () => {
-  const r = readingFromStatus({ Status: 4, AirTemperature: 21.5, SetAirTemperature: 23, SetPower: 2, WaterTemperature: 52, SetWaterTemperature: 60 });
-  assert.equal(r.water, 52);
-  assert.equal(r.waterSetpoint, 60);
   assert.equal(r.flame, true);
-  const states = buildStates(gladys, 'K-E-Y', r, 'fr');
-  const byId = Object.fromEntries(states.map((s) => [s.device_feature_external_id.split(':').pop(), s.state ?? s.text]));
-  assert.equal(byId.water, 52);
-  assert.equal(byId.water_setpoint, 60);
-  assert.equal(byId.flame, 1);
+  assert.equal(r.chronoActive, true);
+  assert.equal(r.pelletLow, false);
 });
 
-test('alarme : binaire + statut FR', () => {
-  const r = readingFromStatus({ Status: 8 });
+test('alarme 32 bits -> bits actifs et message', () => {
+  const regs = { 6: 8, 7: 0, 8: 1, 9: 0, 10: 1, 12: 0, 13: 1, 15: 160, 16: 0, 21: 0 };
+  const r = readingFromRegisters(regs);
+  assert.equal(computeAlarmCode(regs), 1);
+  assert.deepEqual(activeAlarmBits(3), [0, 1]);
   assert.equal(r.alarm, true);
-  assert.equal(r.on, true);
+  assert.equal(r.inError, true);
+  assert.equal(r.pelletLow, true);
+  const states = buildStatesFrom(ids, r, 'fr');
+  const text = (k) => states.find((s) => s.device_feature_external_id === ids.feature(k))?.text;
+  assert.equal(text(FEATURES.ALARM_MSG), 'Trémie à granulés vide');
+  assert.equal(text(FEATURES.STATUS), 'STOP (erreur)');
 });
 
-test('stoveId est stable et minuscule', () => {
-  assert.equal(stoveId('559AA8cf-1234-5678-9abc-def012345678'), '559aa8cf-1234-5678-9abc-def012345678');
+test('repli cloud: GetStatus pauvre -> même forme', () => {
+  const r = readingFromCloudStatus(
+    { Status: 4, AirTemperature: 20, SetAirTemperature: 23, SetPower: 2 },
+    CLOUD_STATUS,
+  );
+  assert.equal(r.statusKey, 'work');
+  assert.equal(r.room, 20);
+  assert.equal(r.setpoint, 23);
+  assert.equal(r.fireLevel, 2);
+  assert.equal(r.fanSpeed, null);
+});
+
+test("buildStates: jamais d'eau (poêle non hydro), tout le reste présent", () => {
+  const regs = { 6: 3, 7: 0, 8: 0, 9: 0, 10: 0, 12: 2, 13: 3, 15: 160, 16: 224, 21: 180 };
+  const states = buildStatesFrom(ids, readingFromRegisters(regs), 'fr');
+  const keys = new Set(states.map((s) => s.device_feature_external_id.split(':').pop()));
+  for (const k of Object.values(FEATURES)) assert.ok(keys.has(k), `feature ${k} manquante`);
+  assert.ok(![...keys].some((k) => k.startsWith('water')));
+  const state = (k) => states.find((s) => s.device_feature_external_id === ids.feature(k))?.state;
+  assert.equal(state(FEATURES.FLUE), 180);
+  assert.equal(state(FEATURES.FAN), 3);
+  assert.equal(state(FEATURES.ROOM), 38);
 });

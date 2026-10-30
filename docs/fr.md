@@ -1,5 +1,12 @@
 # Thermorossi WiNET — intégration Gladys Assistant (non officielle)
 
+
+### WiNET local (recommandé)
+
+L'intégration parle en direct au module WiNET du poêle (IP LAN configurable) :
+état détaillé, niveau de flamme 0-5, ventilation 1-6, température de fumée,
+granulés bas, chrono, alarmes avec message. Repli automatique sur le cloud
+si le module est injoignable.
 Cette intégration amène dans Gladys Assistant les poêles à granulés équipés
 du module Wi-Fi **WiNET** (Thermorossi, et les autres marques qui utilisent
 le portail thermorossi.cloudwinet.it / cloudwinet.it).

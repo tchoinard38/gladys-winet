@@ -1,5 +1,12 @@
 # Thermorossi WiNET — Gladys Assistant integration (unofficial)
 
+
+### Local WiNET module (recommended)
+
+The integration talks directly to the stove's WiNET module (configurable LAN IP):
+full state, fire level 0-5, fan speed 1-6, flue temperature, pellets low, weekly
+program, alarms with explicit messages. Automatic cloud fallback when the module
+is unreachable.
 This integration brings WiNET Wi-Fi pellet stoves (Thermorossi, and other
 brands on the thermorossi.cloudwinet.it / cloudwinet.it portal) into Gladys
 Assistant.

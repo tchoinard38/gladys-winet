@@ -5,11 +5,12 @@ export const DEFAULTS = {
   email: '',
   password: '',
   device_name: '',
+  stove_ip: '192.168.1.201',
   language: 'fr',
   refresh_interval: REFRESH_INTERVAL.default,
 };
 
-/** @returns {{email:string,password:string,deviceName:string,language:string,refreshInterval:number,missing:string[]}} */
+/** @returns {{email:string,password:string,deviceName:string,stoveIp:string,language:string,refreshInterval:number,missing:string[]}} */
 export function normalizeConfig(raw = {}) {
   const given = Object.fromEntries(
     Object.entries(raw ?? {}).filter(([, v]) => v !== null && v !== undefined),
@@ -18,6 +19,7 @@ export function normalizeConfig(raw = {}) {
   const email = String(c.email ?? '').trim();
   const password = String(c.password ?? '');
   const deviceName = String(c.device_name ?? '').trim();
+  const stoveIp = String(c.stove_ip ?? '').trim();
   const language = c.language === 'en' ? 'en' : 'fr';
   const interval = Number(c.refresh_interval);
   const missing = [];
@@ -27,6 +29,7 @@ export function normalizeConfig(raw = {}) {
     email,
     password,
     deviceName,
+    stoveIp,
     language,
     refreshInterval: Number.isFinite(interval)
       ? Math.max(REFRESH_INTERVAL.min, Math.min(REFRESH_INTERVAL.max, Math.round(interval)))
