@@ -16,10 +16,8 @@ COPY src ./src
 COPY gladys-assistant-integration.json LICENSE ./
 
 ENV NODE_ENV=production
-RUN mkdir -p /data && chown node:node /data
+RUN mkdir -p /data
 VOLUME ["/data"]
-
-USER node
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "index.js"]

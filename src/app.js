@@ -37,6 +37,7 @@ export class WinetApp {
     }
     await this.ensureKey({ force });
     this.schedule();
+    this.refresh().catch((err) => logger.warn('first refresh failed', err.message));
   }
 
   stop() {
