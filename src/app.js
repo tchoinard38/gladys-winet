@@ -247,7 +247,7 @@ export class WinetApp {
       if (!Number.isFinite(v) || !FAN_LEVELS.includes(v)) throw new Error(`ventilation ${FAN_LEVELS.join('-')}`);
       const done = await this.localWrite((l) => l.setFanSpeed(v));
       if (!done) throw new Error('ventilation : module WiNET local injoignable');
-      await this.gladys.publishState(feature.external_id, { text: String(v) });
+      await this.gladys.publishState(feature.external_id, v);
     } else {
       throw new Error(`unknown feature ${key}`);
     }

@@ -6,8 +6,8 @@
     "en": "Control Thermorossi (and other WiNET/NetSoftware) pellet stoves in Gladys Assistant.",
     "fr": "Pilotez vos poêles à granulés Thermorossi / WiNET (et NetSoftware) dans Gladys Assistant."
   },
-  "version": "1.2.1",
-  "docker_image": "ghcr.io/tchoinard38/gladys-winet:1.2.1",
+  "version": "1.2.2",
+  "docker_image": "ghcr.io/tchoinard38/gladys-winet:1.2.2",
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/tchoinard38/gladys-winet/main/cover.png",
   "categories": [

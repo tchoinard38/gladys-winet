@@ -54,6 +54,8 @@ const command = (feature) => ({
 const binary = () => sensor({ category: C.UNKNOWN, type: T.SENSOR.BINARY, min: 0, max: 1 });
 const text = () => sensor({ category: C.TEXT, type: T.TEXT.TEXT, keep_history: false, min: 0, max: 0 });
 const select = (levels) =>
+  levels.map((level, i) => ({ value: level, label: String(level), sort_order: i }));
+const textSelect = (levels) =>
   levels.map((level, i) => ({ value: String(level), label: String(level), sort_order: i }));
 
 export function buildDevice(gladys, { apiKey, name, language }) {
@@ -107,7 +109,7 @@ export function buildDevice(gladys, { apiKey, name, language }) {
       named(FEATURES.STATUS, text()),
       named(FEATURES.ALARM, binary()), // pas de catégorie 'alarm' dans le cœur Gladys
       named(FEATURES.ALARM_MSG, text()),
-      named(FEATURES.POWER, command({ category: C.TEXT, type: T.TEXT.SELECT, keep_history: false, min: 0, max: 0, supported_options: select(FIRE_LEVELS) })),
+      named(FEATURES.POWER, command({ category: C.TEXT, type: T.TEXT.SELECT, keep_history: false, min: 0, max: 0, supported_options: textSelect(FIRE_LEVELS) })),
       named(FEATURES.FAN, command({ category: C.FAN, type: T.FAN.SPEED, min: 0, max: 0, supported_options: select(FAN_LEVELS) })),
       named(FEATURES.FLUE, sensor({ category: C.TEMPERATURE_SENSOR, type: T.SENSOR.DECIMAL, unit: U.CELSIUS, min: -30, max: 400 })),
       named(FEATURES.PELLET, binary()),
