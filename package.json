@@ -1,0 +1,16 @@
+{
+  "name": "gladys-winet",
+  "version": "1.0.0",
+  "description": "Gladys Assistant external integration for Thermorossi (and other WiNET/NetSoftware) pellet stoves.",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@gladysassistant/integration-sdk": "^0.16.0"
+  }
+}

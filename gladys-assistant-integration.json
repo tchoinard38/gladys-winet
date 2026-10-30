@@ -1,0 +1,107 @@
+{
+  "manifest_version": 1,
+  "type": "device",
+  "name": "Thermorossi WiNET",
+  "description": {
+    "en": "Control Thermorossi (and other WiNET/NetSoftware) pellet stoves from Gladys Assistant: power, setpoint, power level, state and alarms.",
+    "fr": "Pilotez vos poêles à granulés Thermorossi (et autres modules WiNET/NetSoftware) depuis Gladys Assistant : marche/arrêt, consigne, puissance, état et alarmes."
+  },
+  "version": "1.0.0",
+  "docker_image": "ghcr.io/tchoinard38/gladys-winet:1.0.0",
+  "gladys_version": ">=5.1.0",
+  "cover_image": "https://raw.githubusercontent.com/tchoinard38/gladys-winet/main/cover.png",
+  "categories": ["climate"],
+  "transports": ["cloud"],
+  "config_schema": [
+    {
+      "key": "intro",
+      "type": "section",
+      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "description": {
+        "en": "Use the e-mail and password of the Thermorossi WiNET portal (the same account as the Thermorossi Connector app). The integration reads your device's API key from the portal, exactly like the app does, then talks to the WiNET cloud. Unofficial integration, no affiliation with Thermorossi or NetSoftware.",
+        "fr": "Utilisez l'e-mail et le mot de passe du portail Thermorossi WiNET (le même compte que l'application Thermorossi Connector). L'intégration récupère la clé d'API de votre appareil sur le portail, comme le fait l'application, puis parle au cloud WiNET. Intégration non officielle, sans lien avec Thermorossi ni NetSoftware."
+      },
+      "links": [
+        {
+          "url": "https://thermorossi.cloudwinet.it",
+          "label": { "en": "Thermorossi WiNET portal", "fr": "Portail Thermorossi WiNET" }
+        }
+      ]
+    },
+    {
+      "key": "email",
+      "type": "string",
+      "label": { "en": "Portal e-mail", "fr": "E-mail du portail" },
+      "required": true,
+      "placeholder": { "en": "you@example.com", "fr": "vous@exemple.fr" }
+    },
+    {
+      "key": "password",
+      "type": "secret",
+      "label": { "en": "Portal password", "fr": "Mot de passe du portail" },
+      "required": true
+    },
+    {
+      "key": "device_name",
+      "type": "string",
+      "label": { "en": "Stove name (optional)", "fr": "Nom du poêle (facultatif)" },
+      "description": {
+        "en": "Name shown in Gladys. Leave empty to use the name declared on the portal.",
+        "fr": "Nom affiché dans Gladys. Laissez vide pour utiliser le nom déclaré sur le portail."
+      },
+      "required": false
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": { "en": "Labels language", "fr": "Langue des libellés" },
+      "required": false,
+      "default": "fr",
+      "options": [
+        { "value": "fr", "label": { "en": "French", "fr": "Français" } },
+        { "value": "en", "label": { "en": "English", "fr": "Anglais" } }
+      ]
+    },
+    {
+      "key": "refresh_interval",
+      "type": "number",
+      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "description": {
+        "en": "How often the stove is read, in seconds (one minute minimum, to stay courteous with the cloud).",
+        "fr": "Fréquence de lecture du poêle, en secondes (une minute minimum, pour rester courtois avec le cloud)."
+      },
+      "required": false,
+      "default": 120,
+      "min": 60,
+      "max": 3600
+    }
+  ],
+  "actions": [
+    {
+      "key": "test_connection",
+      "label": { "en": "Test the connection", "fr": "Tester la connexion" },
+      "timeout_seconds": 60
+    }
+  ],
+  "scene_triggers": [
+    {
+      "key": "stove_alarm",
+      "label": { "en": "Stove alarm", "fr": "Alarme du poêle" },
+      "description": {
+        "en": "The pellet stove just entered an alarm state.",
+        "fr": "Le poêle à granulés vient de passer en état d'alarme."
+      },
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": { "en": "Stove", "fr": "Poêle" }
+        }
+      ],
+      "variables": [
+        { "key": "status", "type": "number", "label": { "en": "Alarm status code", "fr": "Code d'état d'alarme" } }
+      ]
+    }
+  ]
+}
